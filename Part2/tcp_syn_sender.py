@@ -84,6 +84,7 @@ pkt_byte = unhexlify((packet))
 try:
     s = socket(AF_PACKET, SOCK_RAW)
     s.bind((interface0, 0))
+    s.send(pkt_byte)
     print(f'Sent {len(pkt_byte)}-byte packet on {interface0}')
 except:
     print(f'Something went wrong!!!')
