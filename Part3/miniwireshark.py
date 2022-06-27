@@ -77,3 +77,5 @@ while True:
     if(ether_shark[2] == "0x800"):
         ip_shark = ip(ether_shark[3])
         tcp_shark = tcp(ip_shark[-1])
+        if(tcp_shark[7] == 1 and tcp_shark[10] == 1): #SYN_ACK
+            print(f'port {tcp_shark[1]} is open on {ip_shark[9]}')
