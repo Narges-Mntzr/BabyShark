@@ -1,7 +1,6 @@
-
 from socket import *
-import string
-from checksum3 import header_checksum
+from binascii import unhexlify, hexlify
+from checksum3 import cs
 
 fd = open('./info.txt', 'r')
 Lines = fd.readlines()
@@ -18,14 +17,19 @@ ttl = "40"  # ttl
 proto4 = "06"  # layer 4 protocol number
 cs3 = "00 00"  # ip check sum
 
-src_ip = Lines[2].split('.')
-src_ip = ''.join((hex(int(i))[2:] for i in src_ip))  # source ip
+src_ip = hexlify(inet_aton(Lines[2])).decode()  # source ip
+src_ip = src_ip[:2] + " " + src_ip[2:4] + " " + src_ip[4:6] + " " + src_ip[6:]
 
-dest_ip = Lines[0].split('.')
-dest_ip = ''.join((hex(int(i))[2:] for i in dest_ip))  # dest ip
+dest_ip = hexlify(inet_aton(Lines[0])).decode()  # dest ip
+dest_ip = dest_ip[:2] + " " + dest_ip[2:4] + \
+    " " + dest_ip[4:6] + " " + dest_ip[6:]
 
 src_port = "%04x" % int(Lines[3])  # src port
+src_port = src_port[:2] + " " + src_port[2:]
+
 dest_port = "%04x" % int(Lines[1])  # dest port
+dest_port = dest_port[:2] + " " + dest_port[2:]
+
 seq_num = "17 49 30 d1"  # seq number
 ack = "00 00 00 00"  # ack number
 # tcp header length and flags ("a0 02" for 40 bytes, "50 02" for 20 bytes)
@@ -36,56 +40,50 @@ up = "00 00"  # urgent pointer
 
 interface0 = Lines[4].strip()
 
+# ethernet
+ethernet_header = f'{dest_mac} {src_mac} {proto3}'
+
 # ip_header
-ip_header = f'{ver}{diff}{t_len}'
-ip_header += f'{id}{flags}'
-ip_header += f'{ttl}{proto4}{cs3}'
-ip_header += f'{src_ip}'
-ip_header += f'{dest_ip}'
-ip_header += f'{src_port}{dest_port}'
-ip_header += f'{seq_num}'
-ip_header += f'{ack}'
-ip_header.translate({ord(c): None for c in string.whitespace})
+ip_header = f'{ver} {diff} {t_len} '
+ip_header += f'{id} {flags} '
+ip_header += f'{ttl} {proto4} {cs3} '
+ip_header += f'{src_ip} '
+ip_header += f'{dest_ip} '
+ip_header += f'{src_port} {dest_port} '
+ip_header += f'{seq_num} '
+ip_header += f'{ack} '
 
-ip_header = bytes.fromhex(ip_header)
-
-checksum = hex(header_checksum(ip_header, len(ip_header)))
-
-ip_header = ip_header.hex()
-ip_header = ip_header[:20] + checksum[2:] + ip_header[24:]
-
+checksum = cs(ip_header)
+ip_header = ip_header[:30] + checksum[:2] + \
+    " " + checksum[2:]+" " + ip_header[36:]
 
 # tcp_header
-tcp_header = f'{src_port} {dest_port}'
-tcp_header += f'{seq_num}'
-tcp_header += f'{ack}'
-tcp_header += f'{h_len} {w_size}'
-tcp_header += f'{cs4} {up}'
-tcp_header.replace(" ", "")
-tcp_header = bytes.fromhex(tcp_header)
+tcp_header = f'{src_port} {dest_port} '
+tcp_header += f'{seq_num} '
+tcp_header += f'{ack} '
+tcp_header += f'{h_len} {w_size} '
+tcp_header += f'{cs4} {up} '
 
 # pseudo header
-pseudo_header = f'{src_mac}'
-pseudo_header += f'{dest_mac}'
-pseudo_header += f'{proto3} {hex(len(tcp_header))[2:]}'
-pseudo_header.replace(" ", "")
-pseudo_header = bytes.fromhex(pseudo_header)
+pseudo_header = f'{src_ip} '
+pseudo_header += f'{dest_ip} '
+pseudo_header += f'00 {proto4} {hex(len(tcp_header))[2:4]} {hex(len(tcp_header))[4:6]}'
 
 pseudo_header = pseudo_header + tcp_header
-checksum = hex(header_checksum(pseudo_header, len(pseudo_header)))
+checksum = cs(pseudo_header)
 
-tcp_header = tcp_header.hex()
-tcp_header = tcp_header[:32] + checksum[2:] + tcp_header[36:]
+tcp_header = tcp_header[:47] + " " + checksum[0:2] + \
+    " " + checksum[2:4]+" " + tcp_header[54:]
 
-packet = ip_header + tcp_header
+
+packet = ethernet_header+" " + ip_header + " " + tcp_header
+packet = "".join(packet.split())
 print(packet)
 # send pkt
-pkt_bin = bin(int(packet, 16))[2:]
-pkt_byte = bytes([int(i) for i in pkt_bin])
+pkt_byte = unhexlify((packet))
 try:
     s = socket(AF_PACKET, SOCK_RAW)
     s.bind((interface0, 0))
-    # print(pkt_byte)
     print(f'Sent {len(pkt_byte)}-byte packet on {interface0}')
 except:
     print(f'Something went wrong!!!')
