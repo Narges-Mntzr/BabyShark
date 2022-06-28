@@ -78,7 +78,7 @@ tcp_header = tcp_header[:47] + " " + checksum[0:2] + \
 
 packet = ethernet_header+" " + ip_header + " " + tcp_header
 packet = "".join(packet.split())
-print(packet)
+
 # send pkt
 pkt_byte = unhexlify((packet))
 try:
