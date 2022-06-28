@@ -1,8 +1,5 @@
-
-from socket import *
 from binascii import unhexlify, hexlify
 from checksum3 import cs
-import argparse
 
 # setup
 fd = open('./info.txt', 'r')
@@ -80,32 +77,3 @@ def make_pkt(destination_port):
     packet = ethernet_header+" " + ip_header + " " + tcp_header
     packet = "".join(packet.split())
     return packet
-
-
-# send pkt
-def main(a, b):
-    for i in range(a, b):
-        pkt_bin = bin(int(make_pkt(i), 16))[2:]
-        pkt_byte = bytes([int(i) for i in pkt_bin])
-
-        try:
-            s = socket(AF_PACKET, SOCK_RAW)
-            s.bind((interface0, 0))
-            s.send(pkt_byte)
-            print(f'Sent TCP SYN packet to port {i}')
-        except:
-            print(f'Something went wrong!!!')
-
-
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description='args')
-
-    parser.add_argument('-min', default=0, type=int,
-                        help='minimum target port')
-    parser.add_argument('-max', default=65535, type=int,
-                        help='maximum target port')
-    args = parser.parse_args()
-    a = args.min
-    b = args.max
-
-    main(a, b)
