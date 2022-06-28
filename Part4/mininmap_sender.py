@@ -101,9 +101,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='args')
 
     parser.add_argument('-min', default=0, type=int,
-                        help='first player path')
+                        help='minimum target port')
     parser.add_argument('-max', default=65535, type=int,
-                        help='second player path')
+                        help='maximum target port')
     args = parser.parse_args()
     a = args.min
     b = args.max
