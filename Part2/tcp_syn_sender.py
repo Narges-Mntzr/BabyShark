@@ -10,7 +10,7 @@ src_mac = Lines[5][:17]  # source mac
 proto3 = "08 00"  # layer 3 protocol number
 ver = "45"  # version, header lengh
 diff = "00"  # diffserv
-t_len = "00 3c"  # total length ("00 28" for 40bytes, "00 3c" for 60 bytes)
+t_len = "00 28"  # total length ("00 28" for 40bytes, "00 3c" for 60 bytes)
 id = "07 c3"  # id
 flags = "40 00"  # flags
 ttl = "40"  # ttl
@@ -33,7 +33,7 @@ dest_port = dest_port[:2] + " " + dest_port[2:]
 seq_num = "17 49 30 d1"  # seq number
 ack = "00 00 00 00"  # ack number
 # tcp header length and flags ("a0 02" for 40 bytes, "50 02" for 20 bytes)
-h_len = "a0 02"
+h_len = "50 02"
 w_size = "72 10"  # window size
 cs4 = "00 00"  # tcp check sum
 up = "00 00"  # urgent pointer
@@ -49,11 +49,8 @@ ip_header += f'{id} {flags} '
 ip_header += f'{ttl} {proto4} {cs3} '
 ip_header += f'{src_ip} '
 ip_header += f'{dest_ip} '
-ip_header += f'{src_port} {dest_port} '
-ip_header += f'{seq_num} '
-ip_header += f'{ack} '
 
-checksum = cs(ip_header)
+checksum = cs("".join(ip_header.split()))
 ip_header = ip_header[:30] + checksum[:2] + \
     " " + checksum[2:]+" " + ip_header[36:]
 
@@ -67,7 +64,8 @@ tcp_header += f'{cs4} {up} '
 # pseudo header
 pseudo_header = f'{src_ip} '
 pseudo_header += f'{dest_ip} '
-pseudo_header += f'00 {proto4} {hex(len(tcp_header))[2:4]} {hex(len(tcp_header))[4:6]}'
+size = len("".join(tcp_header.split()))
+pseudo_header += f'00 {proto4} {hex(size)[2:4]} {hex(size)[4:6]}'
 
 pseudo_header = pseudo_header + tcp_header
 checksum = cs(pseudo_header)
