@@ -32,11 +32,6 @@ class mySocket(Thread):
                 finally:
                     break
 
-def main(a, b):
-    for i in range(a,b):
-        a = mySocket(i)
-        a.start()
-    signal = 1
 
 
 if __name__ == '__main__':
@@ -50,5 +45,9 @@ if __name__ == '__main__':
     a = args.min
     b = args.max
 
-    main(a, b)
+    for i in range(a,b):
+        x = mySocket(i)
+        x.start()
+  
+    signal = 1
 
