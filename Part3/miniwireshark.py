@@ -82,4 +82,4 @@ while True:
         if(ip_shark[7] == 6):
             tcp_shark = tcp(ip_shark[-1])
             if(tcp_shark[7] == 1 and tcp_shark[10] == 1):  # SYN_ACK
-                print "port", tcp_shark[1], " is open on", ip_shark[10]
+                print "port", tcp_shark[0], " is open on", ip_shark[9]
