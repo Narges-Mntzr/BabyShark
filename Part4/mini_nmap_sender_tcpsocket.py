@@ -2,6 +2,7 @@ from threading import Thread
 from make_pkt import make_pkt
 from socket import *
 import argparse
+from binascii import unhexlify, hexlify
 
 signal = 0
 
@@ -20,8 +21,7 @@ class mySocket(Thread):
         global signal    #made global here
         while True:
             if signal == 1:
-                pkt_bin = bin(int(make_pkt(self.port), 16))[2:]
-                pkt_byte = bytes([int(i) for i in pkt_bin])
+                pkt_byte = unhexlify((make_pkt(self.port)))
                 try:
 
                     self.sock.bind((interface0, 0))
