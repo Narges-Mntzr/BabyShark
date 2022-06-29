@@ -48,9 +48,9 @@ ip_header = f'{ver} {diff} {t_len} '
 ip_header += f'{id} {flags} '
 ip_header += f'{ttl} {proto4} {cs3} '
 ip_header += f'{src_ip} '
-ip_header += f'{dest_ip} '
+ip_header += f'{dest_ip}'
 
-checksum = cs("".join(ip_header.split()))
+checksum = cs(ip_header)
 ip_header = ip_header[:30] + checksum[:2] + \
     " " + checksum[2:]+" " + ip_header[36:]
 
@@ -64,8 +64,7 @@ tcp_header += f'{cs4} {up} '
 # pseudo header
 pseudo_header = f'{src_ip} '
 pseudo_header += f'{dest_ip} '
-size = len("".join(tcp_header.split()))
-pseudo_header += f'00 {proto4} {hex(size)[2:4]} {hex(size)[4:6]}'
+pseudo_header += f'00 {proto4} 00 14 '
 
 pseudo_header = pseudo_header + tcp_header
 checksum = cs(pseudo_header)
