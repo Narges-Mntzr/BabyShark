@@ -1,3 +1,4 @@
+from socket import *
 from binascii import unhexlify, hexlify
 from checksum3 import cs
 
@@ -66,7 +67,7 @@ def make_pkt(destination_port):
     # pseudo header
     pseudo_header = f'{src_ip} '
     pseudo_header += f'{dest_ip} '
-    pseudo_header += f'00 {proto4} {hex(len(tcp_header))[2:4]} {hex(len(tcp_header))[4:6]}'
+    pseudo_header += f'00 {proto4} 00 14 '
 
     pseudo_header = pseudo_header + tcp_header
     checksum = cs(pseudo_header)

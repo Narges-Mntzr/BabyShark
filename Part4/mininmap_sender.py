@@ -69,7 +69,7 @@ def make_pkt(destination_port):
     # pseudo header
     pseudo_header = f'{src_ip} '
     pseudo_header += f'{dest_ip} '
-    pseudo_header += f'00 {proto4} {hex(len(tcp_header))[2:4]} {hex(len(tcp_header))[4:6]}'
+    pseudo_header += f'00 {proto4} 00 14 '
 
     pseudo_header = pseudo_header + tcp_header
     checksum = cs(pseudo_header)
@@ -85,8 +85,7 @@ def make_pkt(destination_port):
 # send pkt
 def main(a, b):
     for i in range(a, b):
-        pkt_bin = bin(int(make_pkt(i), 16))[2:]
-        pkt_byte = bytes([int(i) for i in pkt_bin])
+        pkt_byte = unhexlify((make_pkt(i)))
 
         try:
             s = socket(AF_PACKET, SOCK_RAW)
