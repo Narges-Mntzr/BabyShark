@@ -68,9 +68,8 @@ pseudo_header += f'00 {proto4} 00 14 '
 
 pseudo_header = pseudo_header + tcp_header
 checksum = cs(pseudo_header)
-print(checksum)
 
-tcp_header = tcp_header[:47] + " " + checksum[:2] + \
+tcp_header = tcp_header[:47] + " " + checksum[0:2] + \
     " " + checksum[2:4]+" " + tcp_header[54:]
 
 
@@ -79,10 +78,10 @@ packet = "".join(packet.split())
 
 # send pkt
 pkt_byte = unhexlify((packet))
-# try:
-#     s = socket(AF_PACKET, SOCK_RAW)
-#     s.bind((interface0, 0))
-#     s.send(pkt_byte)
-#     print(f'Sent {len(pkt_byte)}-byte packet on {interface0}')
-# except:
-#     print(f'Something went wrong!!!')
+try:
+    s = socket(AF_PACKET, SOCK_RAW)
+    s.bind((interface0, 0))
+    s.send(pkt_byte)
+    print(f'Sent {len(pkt_byte)}-byte packet on {interface0}')
+except:
+    print(f'Something went wrong!!!')
